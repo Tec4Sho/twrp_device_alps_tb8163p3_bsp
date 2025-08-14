@@ -23,7 +23,7 @@ on:
       DEVICE_TREE:
         description: 'Custom Recovery Tree' # Your already made Device Tree for TWRP
         required: true
-        default: 'https://github.com/Tec4Sho/device_alps_tb8163p3_bsp-twrp'
+        default: 'https://github.com/Tec4Sho/device_alps_tb8163p3_bsp'
       DEVICE_TREE_BRANCH:
         description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
         required: true
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: github.event.repository.owner.id == github.event.sender.id
     env:
-      GITHUB_TOKEN: ${{ secrets.alps }}
+      GITHUB_TOKEN: ${{ secrets.ALPS }}
     permissions:
       contents: write
     steps:
@@ -113,10 +113,9 @@ jobs:
       run: |
         mkdir android-recovery
         cd android-recovery
-        #git remote set-url origin "git@github.com:Tec4Sho/device_alps_tb8163p3_bsp.git"
-        #git clone "git@github.com:Tec4Sho/device_alps_tb8163p3_bsp.git"
         git config --global user.name "Tec4Sho"
         git config --global user.email "143420949+Tec4Sho@users.noreply.github.com"
+        git config --global url.https://${{ secrets.ALPS }}@github.com/.insteadOf https://github.com/
         repo init --depth=1 -u ${{ env.MANIFEST }} -b ${{ inputs.MANIFEST_BRANCH }}
 
     - name: Repo Sync
