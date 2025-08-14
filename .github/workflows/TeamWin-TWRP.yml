@@ -23,11 +23,11 @@ on:
       DEVICE_TREE:
         description: 'Custom Recovery Tree' # Your already made Device Tree for TWRP
         required: true
-        default: 'https://github.com/Tec4Sho/device_alps_tb8163p3_bsp'
+        default: 'https://github.com/Tec4Sho/device_alps_tb8163p3_bsp-twrp'
       DEVICE_TREE_BRANCH:
         description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
         required: true
-        default: 'twrp-9.0'
+        default: 'android-9.0'
       DEVICE_PATH:
         description: 'DEVICE_PATH'
         required: true
@@ -39,7 +39,7 @@ on:
       MAKEFILE_NAME:
         description: 'MAKEFILE_NAME (without including .mk, Example: omni_7304F)'
         required: true
-        default: 'omni_tb8163p3_bsp'
+        default: 'twrp_tb8163p3_bsp'
       BUILD_TARGET:
         description: 'Specify your Build Target' # Pick among boot, recovery and vendor_boot
         required: true
@@ -113,9 +113,10 @@ jobs:
       run: |
         mkdir android-recovery
         cd android-recovery
+        #git remote set-url origin "git@github.com:Tec4Sho/device_alps_tb8163p3_bsp.git"
+        #git clone "git@github.com:Tec4Sho/device_alps_tb8163p3_bsp.git"
         git config --global user.name "Tec4Sho"
         git config --global user.email "143420949+Tec4Sho@users.noreply.github.com"
-        git config --global url.https://${{ secrets.ALPS }}@github.com/.insteadOf https://github.com/
         repo init --depth=1 -u ${{ env.MANIFEST }} -b ${{ inputs.MANIFEST_BRANCH }}
 
     - name: Repo Sync
