@@ -1,4 +1,4 @@
-name: Recovery Build TWRP 4.4+ (Ubuntu 18.04)
+name: Recovery Build TWRP 9.0 (Ubuntu 22.04)
 permissions:
   contents: write
 on:
@@ -11,27 +11,36 @@ on:
       MANIFEST_BRANCH:
         description: 'MANIFEST_BRANCH'
         required: true
-        default: 'twrp-5.1'
+        default: 'twrp-9.0'
       DEVICE_TREE_URL:
         description: 'DEVICE_TREE_URL'
         required: true
-        default: 'https://github.com/zh-xijun/twrp_device_'
+        default: 'https://github.com/Tec4Sho/device_alps_tb8163p3_bsp'
       DEVICE_TREE_BRANCH:
         description: 'DEVICE_TREE_BRANCH'
         required: true
-        default: 'twrp-4.4'
+        default: 'android-9.0'
       DEVICE_PATH:
         description: 'DEVICE_PATH'
         required: true
-        default: 'device/'
+        default: 'device/alps/tb8163p3_bsp'
       DEVICE_NAME:
         description: 'DEVICE_NAME'
         required: true
-        default: ''
+        default: 'device_alps_tb8163p3_bsp'
       MAKEFILE_NAME:
         description: 'MAKEFILE_NAME (without including .mk, Example: omni_7304F)'
         required: true
-        default: 'omni_'
+        default: 'omni_tb8163p3_bsp'
+      BUILD_TARGET:
+        description: 'Specify your Build Target' # Pick among boot, recovery and vendor_boot
+        required: true
+        default: 'recovery'
+        type: choice
+        options:
+        - boot
+        - recovery
+        - vendorboot  
       LDCHECK:
         description: 'Use LDCHECK' # I can use only 10 inputs on a workflow file
         required: false
@@ -81,9 +90,9 @@ jobs:
 
     - name: Prepare the environment
       run: |
-        sudo apt update
-        sudo apt -y upgrade
-        sudo apt install -yq bc bison build-essential curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python bash tmux
+        sudo apt-get update
+        sudo apt-get -y upgrade
+        sudo apt-get install -yq bc bison build-essential curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python3 bash tmux
 
     - name: Install OpenJDK
       uses: actions/setup-java@v4
@@ -109,7 +118,7 @@ jobs:
     - name: Initialize repo
       run: |
         mkdir android-recovery
-        cd android-recovery
+        sudo cd android-recovery
         echo "android-recovery-folder=$(pwd)" >> $GITHUB_OUTPUT
         git config --global user.name "${{ github.actor }}"
         git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
@@ -118,11 +127,14 @@ jobs:
           
     - name: Repo Sync
       run: |
+        sudo cd android-recovery
         repo sync -j$(nproc --all) --force-sync
       working-directory: android-recovery
       
     - name: Clone device tree
       run: |
+        sudo cd android-recovery
+        mkdir ${{ inputs.DEVICE_PATH }}
         git clone ${{ inputs.DEVICE_TREE_URL }} -b ${{ inputs.DEVICE_TREE_BRANCH }} ./${{ inputs.DEVICE_PATH }}
       working-directory: ${{ steps.pwd.outputs.android-recovery-folder }}
 
@@ -148,8 +160,9 @@ jobs:
 
     - name: Switch to Python2
       run: |
+        sudo apt-get -y install python2
         sudo rm -f /usr/bin/python /usr/bin/python3.6 /usr/bin/python3.6m /usr/local/bin/python
-        sudo ln -sf /usr/bin/python2.7 /usr/bin/python
+        sudo ln -sf /usr/bin/python2 /usr/bin/python
       continue-on-error: true
     
     - name: Building recovery
@@ -175,7 +188,7 @@ jobs:
           Device tree & Branch: ${{ inputs.DEVICE_TREE_URL }} - ${{ inputs.DEVICE_TREE_BRANCH }}
         prerelease: true
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.ALPS }}
 
     - name: Run LDCheck
       if: inputs.LDCHECK == true
